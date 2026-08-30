@@ -419,3 +419,12 @@ document.getElementById("btnExit").addEventListener("click", async () => {
     if (roomRef) await remove(roomRef);
     location.reload();
 });
+
+// Enterキー入力でも送信する処理
+guessInput.addEventListener("keydown", (event) => {
+    // 変換中のEnter押下誤作動を防ぎつつ、Enterキーでボタンクリックを実行
+    if (event.key === "Enter" && !event.isComposing && !btnSendGuess.disabled) {
+        event.preventDefault();
+        btnSendGuess.click();
+    }
+});
