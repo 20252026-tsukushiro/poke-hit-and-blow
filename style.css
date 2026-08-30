@@ -1,0 +1,144 @@
+body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    text-align: center;
+    background-color: #f4f7f6;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    max-width: 500px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    color: #e63946;
+    margin-bottom: 20px;
+}
+
+input[type="text"] {
+    width: 80%;
+    padding: 10px;
+    font-size: 16px;
+    border: 2px solid #ccc;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #e63946;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+button:hover {
+    background-color: #d62828;
+}
+
+button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.back-btn {
+    background-color: #6c757d;
+    margin-bottom: 15px;
+}
+
+.back-btn:hover {
+    background-color: #5a6268;
+}
+
+/* 画面切替用 */
+.screen {
+    display: none;
+}
+
+.active {
+    display: block;
+}
+
+/* 対戦画面スタイル */
+.turn-info {
+    font-weight: bold;
+    margin: 15px 0;
+    padding: 10px;
+    border-radius: 6px;
+    background-color: #e9ecef;
+}
+
+.my-turn {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.hint-info {
+    font-weight: bold;
+    color: #0d6efd;
+    background-color: #e7f1ff;
+    border: 1px solid #b6d4fe;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    display: none;
+    line-height: 1.5;
+    white-space: pre-line;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+th, td {
+    border: 1px solid #dee2e6;
+    padding: 8px;
+    text-align: center;
+}
+
+th {
+    background-color: #f8f9fa;
+}
+
+/* リザルト画面 */
+.result-area {
+    margin-top: 20px;
+    padding: 15px;
+    background: #fff3cd;
+    border-radius: 8px;
+    display: none;
+}
+
+.btn-group {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 15px;
+}
+
+/* 設定画面 */
+.time-options {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin: 20px 0;
+    font-size: 1.1em;
+}
+
+/* タイマー表示 */
+.timer-info {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #d62828;
+    margin-bottom: 10px;
+}

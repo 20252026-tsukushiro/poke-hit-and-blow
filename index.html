@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poke Hit＆Blow</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+    <h1>Poke Hit＆Blow</h1>
+
+    <!-- 1. タイトル画面 -->
+    <div id="screenTitle" class="screen active">
+        <p>プレイヤー名を入力</p>
+        <input type="text" id="playerNameInput" placeholder="例: サトシ" maxlength="10"><br>
+        <button id="btnTitleNext">この名前で決定</button>
+    </div>
+
+    <!-- 2. 合言葉入力画面 -->
+    <div id="screenRoom" class="screen">
+        <button id="btnBackToTitle" class="back-btn">← タイトルに戻る</button>
+        <p>合言葉を入力して対戦相手を見つけよう！</p>
+        <input type="text" id="roomNameInput" placeholder="例: poke123"><br>
+        <button id="btnJoinRoom">入室する</button>
+        <p id="roomStatusMsg"></p>
+    </div>
+
+<!-- 2.5 設定画面（マッチング後） -->
+    <div id="screenConfig" class="screen">
+        <h2>対戦設定</h2>
+        <div id="hostConfigArea" style="display: none;">
+            <p>1ターンあたりの制限時間を選択してください</p>
+            <div class="time-options">
+                <label><input type="radio" name="timeLimit" value="30"> 30秒</label>
+                <label><input type="radio" name="timeLimit" value="60" checked> 60秒</label>
+                <label><input type="radio" name="timeLimit" value="0"> 無制限</label>
+            </div>
+            <button id="btnStartGame" style="margin-top: 20px;">ゲーム開始</button>
+        </div>
+        <div id="guestWaitArea" style="display: none;">
+            <p>ホストがルール（制限時間）を設定中です。少々お待ちください...</p>
+        </div>
+    </div>
+
+    <!-- 3. 対戦画面 -->
+    <div id="screenGame" class="screen">
+        <!-- 勝敗結果エリア -->
+        <div id="resultArea" class="result-area">
+            <p id="resultAnswer" style="font-size: 1.1em; font-weight: bold;"></p>
+            <p id="resultWinner" style="font-size: 1.2em; color: #d62828; font-weight: bold;"></p>
+            <div class="btn-group">
+                <button id="btnRematch">再戦する</button>
+                <button id="btnExit" class="back-btn">退出する</button>
+            </div>
+            <p id="rematchStatus" style="font-size: 0.9em; color: #6c757d; margin-top: 10px;"></p>
+        </div>
+
+        <div id="turnIndicator" class="turn-info">対戦準備中...</div>
+        <div id="timerIndicator" class="timer-info">残り時間: --秒</div>
+        <div id="hintArea" class="hint-info"></div>
+
+        <!-- 予想入力エリア -->
+        <div id="guessArea">
+            <input type="text" id="guessInput" placeholder="ポケモン名" maxlength="6">
+            <button id="btnSendGuess">送信</button>
+        </div>
+
+        <!-- ログテーブル -->
+        <table>
+            <thead>
+                <tr>
+                    <th>ターン</th>
+                    <th>プレイヤー</th>
+                    <th>予測</th>
+                    <th>Hit</th>
+                    <th>Blow</th>
+                </tr>
+            </thead>
+            <tbody id="historyTableBody"></tbody>
+        </table>
+
+    </div>
+</div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
