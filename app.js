@@ -168,7 +168,7 @@ btnStartGame.addEventListener("click", async () => {
     });
 });
 
-// 部屋の状態監視（修正版）
+// 部屋の状態監視
 function listenRoom() {
     onValue(roomRef, async (snapshot) => {
         const data = snapshot.val();
@@ -178,7 +178,6 @@ function listenRoom() {
             return;
         }
 
-        // マッチング成立後の設定画面（screenConfig）への遷移処理
         if (data.status === "config") {
             showScreen(screenConfig);
             if (myRole === "player1") {
@@ -193,20 +192,6 @@ function listenRoom() {
 
         if (data.status === "playing" || data.status === "finished") {
             showScreen(screenGame);
-            
-            // 自分のターンであり、まだタイマー開始時刻がセットされていない場合に自身で時刻をセット
-            if (data.status === "playing" && data.currentTurn === myRole) {
-                const historyLength = (data.history || []).length;
-                // ターン数が進んだタイミングでタイマーを自分基準でリセット
-                if (data.lastTurnCount !== historyLength) {
-                    await update(roomRef, {
-                        turnStartTime: Date.now(),
-                        lastTurnCount: historyLength
-                    });
-                    return; // update後の再読み込みに任せる
-                }
-            }
-
             renderGame(data);
         }
     });
@@ -264,7 +249,10 @@ async function submitGuess(guessText) {
         blow: blow
     });
 
-    const updates = { history: history };
+    const updates = { 
+        history: history,
+        turnStartTime: Date.now()
+    };
 
     if (hit === 6) {
         updates.status = "finished";
@@ -370,8 +358,6 @@ function renderGame(data) {
         hintArea.style.display = "none";
         guessArea.style.display = "none";
         resultArea.style.display = "block";
-        // 次のゲーム終了時に再戦ボタンを押せるよう有効化する
-        btnRematch.disabled = false;
 
         resultAnswer.textContent = `正解は「${data.targetName}」でした！`;
         const winnerName = data[data.winner].name;
