@@ -370,6 +370,8 @@ function renderGame(data) {
         hintArea.style.display = "none";
         guessArea.style.display = "none";
         resultArea.style.display = "block";
+        // 次のゲーム終了時に再戦ボタンを押せるよう有効化する
+        btnRematch.disabled = false;
 
         resultAnswer.textContent = `正解は「${data.targetName}」でした！`;
         const winnerName = data[data.winner].name;
