@@ -168,7 +168,7 @@ btnStartGame.addEventListener("click", async () => {
     });
 });
 
-// 部屋の状態監視
+// 部屋の状態監視（修正版）
 function listenRoom() {
     onValue(roomRef, async (snapshot) => {
         const data = snapshot.val();
@@ -178,12 +178,23 @@ function listenRoom() {
             return;
         }
 
-        // ...（中略）...
+        // マッチング成立後の設定画面（screenConfig）への遷移処理
+        if (data.status === "config") {
+            showScreen(screenConfig);
+            if (myRole === "player1") {
+                hostConfigArea.style.display = "block";
+                guestWaitArea.style.display = "none";
+            } else {
+                hostConfigArea.style.display = "none";
+                guestWaitArea.style.display = "block";
+            }
+            return;
+        }
 
         if (data.status === "playing" || data.status === "finished") {
             showScreen(screenGame);
             
-            // 自分のターンであり、まだタイマー開始時刻がセットされていない（または前ターンのまま）場合に自身で時刻をセット
+            // 自分のターンであり、まだタイマー開始時刻がセットされていない場合に自身で時刻をセット
             if (data.status === "playing" && data.currentTurn === myRole) {
                 const historyLength = (data.history || []).length;
                 // ターン数が進んだタイミングでタイマーを自分基準でリセット
