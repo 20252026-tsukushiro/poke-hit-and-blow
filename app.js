@@ -369,6 +369,9 @@ function renderGame(data) {
         guessArea.style.display = "none";
         resultArea.style.display = "block";
 
+        // 自分がすでに再戦を押していれば無効化、未押下なら有効化する
+        btnRematch.disabled = !!(data[myRole] && data[myRole].rematch);
+
         resultAnswer.textContent = `正解は「${data.targetName}」でした！`;
         const winnerName = data[data.winner].name;
         resultWinner.textContent = `${winnerName} の勝利！`;
