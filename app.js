@@ -116,7 +116,10 @@ document.getElementById("btnJoinRoom").addEventListener("click", async () => {
             onDisconnect(roomRef).remove();
             listenRoom();
         } else {
-            roomStatusMsg.textContent = "その合言葉の部屋は満室です。";
+            // 3人目以降は観戦者として入室
+            myRole = "spectator";
+            roomStatusMsg.textContent = "観戦者として入室中...";
+            listenRoom();
         }
     } catch (e) {
         console.error(e);
@@ -183,9 +186,16 @@ function listenRoom() {
             if (myRole === "player1") {
                 hostConfigArea.style.display = "block";
                 guestWaitArea.style.display = "none";
-            } else {
+                document.getElementById("spectatorWaitArea").style.display = "none";
+            } else if (myRole === "player2") {
                 hostConfigArea.style.display = "none";
                 guestWaitArea.style.display = "block";
+                document.getElementById("spectatorWaitArea").style.display = "none";
+            } else {
+                // 観戦者の表示
+                hostConfigArea.style.display = "none";
+                guestWaitArea.style.display = "none";
+                document.getElementById("spectatorWaitArea").style.display = "block";
             }
             return;
         }
@@ -326,7 +336,8 @@ function renderGame(data) {
         resultArea.style.display = "none";
         turnIndicator.style.display = "block";
         timerIndicator.style.display = "block";
-        guessArea.style.display = "block";
+        // 観戦者の場合は入力欄を非表示
+        guessArea.style.display = (myRole === "spectator") ? "none" : "block";
 
         const currentTurnNumber = history.length + 1;
         const hints = [];
@@ -345,7 +356,13 @@ function renderGame(data) {
         const isMyTurn = data.currentTurn === myRole;
         const currentTurnPlayerName = data[data.currentTurn].name;
 
-        if (isMyTurn) {
+        // ターンインジケーター表示の制御
+        if (myRole === "spectator") {
+            const p1Name = data.player1 ? data.player1.name : "Player1";
+            const p2Name = data.player2 ? data.player2.name : "Player2";
+            turnIndicator.textContent = `👀 観戦中: ${p1Name} vs ${p2Name}（${currentTurnPlayerName} のターン）`;
+            turnIndicator.className = "turn-info";
+        } else if (isMyTurn) {
             turnIndicator.textContent = "あなたのターンです！予測を入力してください。";
             turnIndicator.className = "turn-info my-turn";
             guessInput.disabled = false;
@@ -370,7 +387,13 @@ function renderGame(data) {
         resultArea.style.display = "block";
 
         // 自分がすでに再戦を押していれば無効化、未押下なら有効化する
-        btnRematch.disabled = !!(data[myRole] && data[myRole].rematch);
+        // ★ 観戦者は再戦ボタンを非表示にする
+        if (myRole === "spectator") {
+            btnRematch.style.display = "none";
+        } else {
+            btnRematch.style.display = "inline-block";
+            btnRematch.disabled = !!(data[myRole] && data[myRole].rematch);
+        }
 
         resultAnswer.textContent = `正解は「${data.targetName}」でした！`;
         const winnerName = data[data.winner].name;
@@ -429,7 +452,10 @@ btnRematch.addEventListener("click", async () => {
 
 // 退出ボタン
 document.getElementById("btnExit").addEventListener("click", async () => {
-    if (roomRef) await remove(roomRef);
+    // プレイヤーが抜けた場合のみデータベースから部屋を削除
+    if (roomRef && myRole !== "spectator") {
+        await remove(roomRef);
+    }
     location.reload();
 });
 
