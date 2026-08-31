@@ -46,6 +46,7 @@ const btnStartGame = document.getElementById("btnStartGame");
 
 const turnIndicator = document.getElementById("turnIndicator");
 const timerIndicator = document.getElementById("timerIndicator");
+const genIndicator = document.getElementById("genIndicator");
 const hintArea = document.getElementById("hintArea");
 const guessArea = document.getElementById("guessArea");
 const guessInput = document.getElementById("guessInput");
@@ -127,42 +128,56 @@ document.getElementById("btnJoinRoom").addEventListener("click", async () => {
     }
 });
 
-// ポケモンデータ取得
-async function getRandomPokemonData() {
-    const id = Math.floor(Math.random() * 1025) + 1;
-    const [speciesRes, pokemonRes] = await Promise.all([
-        fetch(`https://pokeapi.co/api/v2/pokemon-species/${id}/`),
-        fetch(`https://pokeapi.co/api/v2/pokemon/${id}/`)
-    ]);
+// ポケモンデータ取得（選択世代フィルタ付き）
+async function getRandomPokemonData(selectedGens) {
+    while (true) {
+        const id = Math.floor(Math.random() * 1025) + 1;
+        const speciesRes = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${id}/`);
+        const speciesData = await speciesRes.json();
 
-    const speciesData = await speciesRes.json();
-    const pokemonData = await pokemonRes.json();
+        // 世代IDの抽出 (例: "1", "4")
+        const genUrlParts = speciesData.generation.url.split('/').filter(Boolean);
+        const genId = genUrlParts[genUrlParts.length - 1];
 
-    const jaEntry = speciesData.names.find(n => n.language.name === "ja-Hrkt" || n.language.name === "ja");
-    const name = jaEntry ? jaEntry.name : "ピカチュウ";
+        // 選択した世代に含まれている場合のみ結果を返して終了
+        if (selectedGens.includes(genId)) {
+            const pokemonRes = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}/`);
+            const pokemonData = await pokemonRes.json();
 
-    const genUrlParts = speciesData.generation.url.split('/').filter(Boolean);
-    const genId = genUrlParts[genUrlParts.length - 1];
-    const generationText = `第${genId}世代`;
+            const jaEntry = speciesData.names.find(n => n.language.name === "ja-Hrkt" || n.language.name === "ja");
+            const name = jaEntry ? jaEntry.name : "ピカチュウ";
+            const generationText = `第${genId}世代`;
 
-    const typesText = pokemonData.types
-        .map(t => typeMap[t.type.name] || t.type.name)
-        .join('/');
+            const typesText = pokemonData.types
+                .map(t => typeMap[t.type.name] || t.type.name)
+                .join('/');
 
-    return { name, generation: generationText, types: typesText };
+            return { name, generation: generationText, types: typesText };
+        }
+    }
 }
 
 // ホストのゲーム開始処理
 btnStartGame.addEventListener("click", async () => {
+    // チェックされている世代の値を取得
+    const checkedBoxes = document.querySelectorAll('input[name="genCheck"]:checked');
+    const selectedGens = Array.from(checkedBoxes).map(cb => cb.value);
+
+    if (selectedGens.length === 0) {
+        return alert("少なくとも1つの世代を選択してください。");
+    }
+
     btnStartGame.disabled = true;
+    btnStartGame.textContent = "ポケモンを選出中...";
     const selectedLimit = parseInt(document.querySelector('input[name="timeLimit"]:checked').value, 10);
-    const pokeData = await getRandomPokemonData();
+    const pokeData = await getRandomPokemonData(selectedGens);
     const firstTurn = Math.random() < 0.5 ? "player1" : "player2";
 
     await update(roomRef, {
         targetName: pokeData.name,
         targetGen: pokeData.generation,
         targetTypes: pokeData.types,
+        selectedGens: selectedGens, // ★ 再戦用に部屋データに保持
         currentTurn: firstTurn,
         timeLimit: selectedLimit,
         turnStartTime: Date.now(),
@@ -336,6 +351,16 @@ function renderGame(data) {
         resultArea.style.display = "none";
         turnIndicator.style.display = "block";
         timerIndicator.style.display = "block";
+
+        // 選択されている世代の表示処理
+        if (data.selectedGens && data.selectedGens.length > 0) {
+            const genListStr = data.selectedGens.map(g => `第${g}`).join(', ');
+            genIndicator.textContent = `対象世代: ${genListStr}世代`;
+        } else {
+            genIndicator.textContent = `対象世代: 全世代`;
+        }
+        genIndicator.style.display = "block";
+
         // 観戦者の場合は入力欄を非表示
         guessArea.style.display = (myRole === "spectator") ? "none" : "block";
 
@@ -382,6 +407,7 @@ function renderGame(data) {
         // プレイ中の要素を非表示にして結果エリアのみ最上部に表示
         turnIndicator.style.display = "none";
         timerIndicator.style.display = "none";
+        genIndicator.style.display = "none";
         hintArea.style.display = "none";
         guessArea.style.display = "none";
         resultArea.style.display = "block";
@@ -406,7 +432,9 @@ function renderGame(data) {
             rematchStatus.textContent = "両者が再戦を選択しました。次のゲームを開始します...";
             if (myRole === "player1") {
                 (async () => {
-                    const pokeData = await getRandomPokemonData();
+                    // 保存されている設定世代を取得（フォールバック付き）
+                    const gens = data.selectedGens || ["1","2","3","4","5","6","7","8","9"];
+                    const pokeData = await getRandomPokemonData(gens);
                     const firstTurn = Math.random() < 0.5 ? "player1" : "player2";
                     await update(roomRef, {
                         targetName: pokeData.name,
